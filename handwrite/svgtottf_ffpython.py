@@ -295,7 +295,7 @@ def add_glyphs(
             rotated_glyph_set = [g]
             if "rotate" in glyph_object:
 
-                def rotate(flip, degrees_ccw, suffix):
+                def rotate(flip, degrees_ccw, suffix,codepoint=-1):
                     # Todo: add "name" and "g" as params, then pull this function out to
                     # the top.
                     # ...Uhh also return the rotated glyph, so it can be appended to
@@ -303,7 +303,7 @@ def add_glyphs(
                     # If we pull *that* out, then it's appropriate to use this to
                     # generate rotated cartouche parts.
 
-                    rotated_glyph = font.createChar(-1, name + suffix)
+                    rotated_glyph = font.createChar(codepoint, name + suffix)
                     font.selection.select(g)
                     font.copy()
                     font.selection.select(rotated_glyph)
@@ -329,11 +329,14 @@ def add_glyphs(
                 elif direction == "down":
                     # ni
                     rotate(False, 45, ".SE")
-                    rotate(False, 90, ".E")
+                    if name=="niTok":rotate(False, 90, ".E",989579)
+                    else:rotate(False, 90, ".E")
                     rotate(False, 135, ".NE")
-                    rotate(False, 180, ".N")
+                    if name=="niTok":rotate(False, 180, ".N",989578)
+                    else:rotate(False, 180, ".N")
                     rotate(False, 225, ".NW")
-                    rotate(False, 270, ".W")
+                    if name=="niTok":rotate(False, 270, ".W",989577)
+                    else:rotate(False, 270, ".W")
                     rotate(False, 315, ".SW")
                 elif direction == "left":
                     rotate(False, 45, ".SW")
