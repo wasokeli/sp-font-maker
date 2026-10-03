@@ -445,12 +445,11 @@ def detect_characters(
             for default_glyph_index, default_glyph in enumerate(glyphs_json):
                 if "name" in default_glyph:
                     if default_glyph["name"] == word.split("/")[0] + "Tok":
-                        if has_extra:sorted_characters[default_glyph_index] = sorted_characters[
+                        try:sorted_characters[default_glyph_index] = sorted_characters[
                             writein_cell_indices[position]-180*has_extra
                         ]
-                        else:sorted_characters[default_glyph_index] = sorted_characters[
-                            writein_cell_indices[position]
-                        ]
+                        except:
+                            print('Unexpected error with "'+word+'". Possibly this is because a word is on 2 different sheets. Corrections/redrawings of the same glyph should happen within the same sheet.')
 
     #          ▄                 █         █
     # ▄▀▄ ▀▄▀ ▀█▀ █▄▀ ▄▀█    ▄▀█ █ █ █ █▀▄ █▀▄ ▄▀▀

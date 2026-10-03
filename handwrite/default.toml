@@ -416,6 +416,10 @@ glyphs.spaces = [
   {codepoint = 0x21, width = 1.0, name = "exclamation", writein = "!"},
   {codepoint = 0x3f, width = 1.0, name = "question",    writein = "?"},
   {codepoint = 0x3b, width = 1.0, name = "semicolon",   writein = ";"},
+  {codepoint = 0xa1, width = 1.0, name = "exclamdown",   writein = "¡"},
+  {codepoint = 0xbf, width = 1.0, name = "questiondown",   writein = "¿"},
+  {codepoint = 0x7e, width = 1.0, name = "asciitilde",   writein = "~"},
+
 
   # UCSUR features:
   # The `space space` ligature doesn't work in HTML, where consecutive
