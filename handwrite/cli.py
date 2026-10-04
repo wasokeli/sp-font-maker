@@ -45,15 +45,18 @@ def run(
         writein_cell_indices
     )
     if extra_sheet!=None:
-        sheet_to_png(
-            extra_sheet,
-            debug_dir,
-            default_json,
-            cli_args,
-            other_words_string,
-            writein_cell_indices,
-            has_extra=True
-        )
+        extracount=1
+        for extra in extra_sheet.split(";"):
+            sheet_to_png(
+                extra.strip(),
+                debug_dir,
+                default_json,
+                cli_args,
+                other_words_string,
+                writein_cell_indices,
+                has_extra=extracount
+            )
+            extracount+=1
     png_to_svg(cli_args, default_json, debug_dir=debug_dir)
     svg_to_ttf(debug_dir, output_directory, default_json, cli_args, other_words_string)
     add_ligatures(
@@ -95,7 +98,7 @@ def converters(
         font_data = tomllib.load(file)
     glyphs_json = font_data.get("glyphs", {}).get("sheet", [])
     if extra_sheet!=None:
-        for cell in range(9*20):
+        for cell in range(9*20*len(extra_sheet.split(";"))):
             glyphs_json.append({})
 
     # Map the `--other-words` list to the blank cells in default.toml.
@@ -103,7 +106,7 @@ def converters(
     for cell_index, cell in enumerate(glyphs_json):
         if not cell:
             writein_cell_indices.append(cell_index)
-
+            
     # Save as JSON in debug directory. We'll edit it to add custom words.
     # Extra config sheets should be merged into the same working JSON file.
     json_path = os.path.join(debug_dir, "default.json")
