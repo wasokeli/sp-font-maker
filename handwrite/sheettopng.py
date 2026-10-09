@@ -112,6 +112,8 @@ def detect_characters(
     close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 
     pixel = cli_args.get("pixel") or False
+    noycenter=cli_args.get("no_y_center") or False
+    noxcenter=cli_args.get("no_x_center") or False
     if pixel:
         iterations = 0
     else:
@@ -368,7 +370,7 @@ def detect_characters(
                 new_glyph_left = glyph_left + x_shift
                 new_glyph_top = glyph_top + y_shift
 
-                if centered and not pixel:
+                if centered and not pixel and not noxcenter:
                     # toggle this line to toggle the algorithm,
                     # while still previewing the algorithm on "analysis PREVIEW.png".
                     # (note that i'm only implementing horizontal shift,

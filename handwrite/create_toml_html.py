@@ -281,7 +281,11 @@ features = [
     if c["extra_sheet"]:
         bat_string += f'--extra-sheet "{c["extra_sheet"]}" '
     if c["pixel"]:
-        bat_string += f"--pixel"
+        bat_string += f"--pixel "
+    if c["no_y_center"]:
+        bat_string += f"--no-y-center "
+    if c["no_x_center"]:
+        bat_string += f"--no-x-center "
     print("🗃️ Nicely-formatted command for Kelly's .bat file:", bat_string)
     print()
 

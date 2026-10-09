@@ -49,6 +49,8 @@ def set_properties(font, cli_args, version_major, version_minor, version_patch):
     font.hasvmetrics = 1
 
     pixel = cli_args.get("pixel") or False
+    noycenter=cli_args.get("no_y_center") or False
+    noxcenter=cli_args.get("no_x_center") or False
     # Apply the new metrics to pixel fonts retroactively, to combat blurring.
     if version_major < 4 and not pixel:
         font.ascent = 800
@@ -128,6 +130,8 @@ def add_glyphs(
     # print("      It's fine, the font still works!")
 
     pixel = cli_args.get("pixel") or False
+    noycenter=cli_args.get("no_y_center") or False
+    noxcenter=cli_args.get("no_x_center") or False
 
     to_center_x = -500
     if version_major < 4 and not pixel:
@@ -365,7 +369,7 @@ def add_glyphs(
             # Alternately, center again after rotating specifically.
 
             def center_horizontally(g, glyph_object):
-                if not pixel:
+                if not pixel and not noxcenter:
                     left = g.boundingBox()[0]
                     right = g.boundingBox()[2]
                     width = right - left
@@ -374,7 +378,7 @@ def add_glyphs(
                 g.vwidth = int(glyph_object.get("height", 1.0) * 1000)
 
             def center_vertically(g, glyph_object):
-                if not pixel:
+                if not pixel and not noycenter:
                     bottom = g.boundingBox()[1]
                     top = g.boundingBox()[3]
                     g.transform(

@@ -287,6 +287,18 @@ def main():
         default=False,
     )
     parser.add_argument(
+        "--no-y-center",
+        action="store_true",
+        help="Disable vertical centering",
+        default=False,
+    )
+    parser.add_argument(
+        "--no-x-center",
+        action="store_true",
+        help="Disable horizontal centering",
+        default=False,
+    )
+    parser.add_argument(
         "--not-new",
         action="store_true",
         help="Skip creating a .TOML file, and skip writing to `generate all fonts.bat` (false by default)",
@@ -309,6 +321,8 @@ def main():
     #     "pixel": args.pixel,
     #     "not_new": args.not_new,
     #     "extra_sheet": args.extra_sheet,
+    #     "no_y_center": args.no_y_center,
+    #     "no_x_center": args.no_x_center,
     # }
     cli_args = vars(parser.parse_args())
 
