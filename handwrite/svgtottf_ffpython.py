@@ -49,6 +49,8 @@ def set_properties(font, cli_args, version_major, version_minor, version_patch):
     font.hasvmetrics = 1
 
     pixel = cli_args.get("pixel") or False
+    noycenter = cli_args.get("no_y_center") or False
+    noxcenter = cli_args.get("no_x_center") or False
     # Apply the new metrics to pixel fonts retroactively, to combat blurring.
     if version_major < 4 and not pixel:
         font.ascent = 800
@@ -128,6 +130,8 @@ def add_glyphs(
     # print("      It's fine, the font still works!")
 
     pixel = cli_args.get("pixel") or False
+    noycenter = cli_args.get("no_y_center") or False
+    noxcenter = cli_args.get("no_x_center") or False
 
     to_center_x = -500
     if version_major < 4 and not pixel:
@@ -295,7 +299,7 @@ def add_glyphs(
             rotated_glyph_set = [g]
             if "rotate" in glyph_object:
 
-                def rotate(flip, degrees_ccw, suffix):
+                def rotate(flip, degrees_ccw, suffix, codepoint=-1):
                     # Todo: add "name" and "g" as params, then pull this function out to
                     # the top.
                     # ...Uhh also return the rotated glyph, so it can be appended to
@@ -303,7 +307,7 @@ def add_glyphs(
                     # If we pull *that* out, then it's appropriate to use this to
                     # generate rotated cartouche parts.
 
-                    rotated_glyph = font.createChar(-1, name + suffix)
+                    rotated_glyph = font.createChar(codepoint, name + suffix)
                     font.selection.select(g)
                     font.copy()
                     font.selection.select(rotated_glyph)
@@ -329,11 +333,20 @@ def add_glyphs(
                 elif direction == "down":
                     # ni
                     rotate(False, 45, ".SE")
-                    rotate(False, 90, ".E")
+                    if name == "niTok":
+                        rotate(False, 90, ".E", 989579)
+                    else:
+                        rotate(False, 90, ".E")
                     rotate(False, 135, ".NE")
-                    rotate(False, 180, ".N")
+                    if name == "niTok":
+                        rotate(False, 180, ".N", 989578)
+                    else:
+                        rotate(False, 180, ".N")
                     rotate(False, 225, ".NW")
-                    rotate(False, 270, ".W")
+                    if name == "niTok":
+                        rotate(False, 270, ".W", 989577)
+                    else:
+                        rotate(False, 270, ".W")
                     rotate(False, 315, ".SW")
                 elif direction == "left":
                     rotate(False, 45, ".SW")
@@ -362,7 +375,7 @@ def add_glyphs(
             # Alternately, center again after rotating specifically.
 
             def center_horizontally(g, glyph_object):
-                if not pixel:
+                if not pixel and not noxcenter:
                     left = g.boundingBox()[0]
                     right = g.boundingBox()[2]
                     width = right - left
@@ -371,7 +384,7 @@ def add_glyphs(
                 g.vwidth = int(glyph_object.get("height", 1.0) * 1000)
 
             def center_vertically(g, glyph_object):
-                if not pixel:
+                if not pixel and not noycenter:
                     bottom = g.boundingBox()[1]
                     top = g.boundingBox()[3]
                     g.transform(

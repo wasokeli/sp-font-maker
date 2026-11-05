@@ -306,6 +306,10 @@ glyphs.spaces = [
   {codepoint = 0x21, width = 1.0, name = "exclamation", writein = "!"},
   {codepoint = 0x3f, width = 1.0, name = "question",    writein = "?"},
   {codepoint = 0x3b, width = 1.0, name = "semicolon",   writein = ";"},
+  {codepoint = 0xa1, width = 1.0, name = "exclamdown",   writein = "¡"},
+  {codepoint = 0xbf, width = 1.0, name = "questiondown",   writein = "¿"},
+  {codepoint = 0x7e, width = 1.0, name = "asciitilde",   writein = "~"},
+
 
   {codepoint = 0x3000,  width = 1.0, name = "ideographicspace", ligature = "space space", cartoucheable-stackable = false},
   {codepoint = 0x200b,  width =   0, name = "zerowidthspace"},
@@ -351,10 +355,35 @@ ligature-aliases = [
 #  ▀ ▀  ▀   ▀  ▀▀  ▀▀ ▀ ▀ ▀    ▀ ▀ ▀  ▀▀  ▀▀  ▀▀  ▀▀  ▀▀  ▀▀  ▀▀
 
 writein-metadata = [
+  # UCSUR codepoints
   {codepoint = 0xf19a1, name = "apejaTok"},
   {codepoint = 0xf1984, name = "kokosilaTok"},
   {codepoint = 0xf19a0, name = "pakeTok"},
   {codepoint = 0xf19a3, name = "poweTok"},
+  {codepoint = 0xf1984, name = "kokosilaTok"},
+  {codepoint = 0xf1988, name = "kuTok"},
+  {codepoint = 0xf19a5, name = "kikiTok"},
+  {codepoint = 0xf19a6, name = "suTok"},
+  {codepoint = 0xf19a7, name = "isipinTok"},
+  {codepoint = 0xf19a8, name = "kamalawalaTok"},
+  {codepoint = 0xf19a9, name = "kapesiTok"},
+  {codepoint = 0xf19aa, name = "melomeTok"},
+  {codepoint = 0xf19ab, name = "mijomiTok"},
+  {codepoint = 0xf19ac, name = "misaTok"},
+  {codepoint = 0xf19ad, name = "nimisinTok"},
+  {codepoint = 0xf19ae, name = "njaTok"},
+  {codepoint = 0xf19af, name = "okeTok"},
+  {codepoint = 0xf19b0, name = "omekapoTok"},
+  {codepoint = 0xf19b1, name = "puwaTok"},
+  {codepoint = 0xf19b2, name = "sanTok"},
+  {codepoint = 0xf19b3, name = "takiTok"},
+  {codepoint = 0xf19b6, name = "unuTok"},
+  {codepoint = 0xf19b7, name = "usawiTok"},
+  {codepoint = 0xf19b8, name = "waTok"},
+  {codepoint = 0xf19b9, name = "wuwojitiTok"},
+  {codepoint = 0xf19ba, name = "yupekosiTok"},
+  {codepoint = 0xf198c, name = "sewizerotwoTok"},
+
 
   {                     name = "apiTok",      rotate = true},
   {                     name = "KeliTok",     rotate = true},
@@ -370,7 +399,7 @@ writein-metadata = [
   {                     name = "wakenTok",    rotate = true},
   {                     name = "wasoweliTok", rotate = true},
 
-  {name = "tallyTok",                                                                       type = "tally", center = false},
+  {codepoint = 0x199E, name = "tallyTok",                                                   type = "tally", center = false},
   {name = "tallytallyTok",                                                                  type = "tally", center = false},
   {name = "tallytallytallyTok",                                                             type = "tally", center = false},
   {name = "tallytallytallytallyTok",                                                        type = "tally", center = false},
