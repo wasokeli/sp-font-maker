@@ -16,7 +16,7 @@ def sheet_to_png(
     writein_cell_indices,
     cols=20,
     rows=9,
-    has_extra=0
+    has_extra=0,
 ):
     """Convert a sheet of sample writing input to a custom directory structure of PNGs.
 
@@ -48,14 +48,14 @@ def sheet_to_png(
         writein_cell_indices,
         cols=cols,
         rows=rows,
-        has_extra=has_extra
+        has_extra=has_extra,
     )
     save_images(
         characters,  # more like cells
         debug_dir,
         default_json,
         cli_args,
-        has_extra=has_extra
+        has_extra=has_extra,
     )
 
 
@@ -68,7 +68,7 @@ def detect_characters(
     writein_cell_indices,
     cols=20,
     rows=9,
-    has_extra=0
+    has_extra=0,
 ):
     """Detect contours on the input image and filter them to get only characters.
 
@@ -96,24 +96,52 @@ def detect_characters(
 
     # Read the image and convert to grayscale
     image = cv2.imread(sheet_image)
-    if has_extra:cv2.imwrite(os.path.join(debug_dir, "analysis step 1 - image" + "_extra"+str(has_extra)+".png"), image)
-    else:cv2.imwrite(os.path.join(debug_dir, "analysis step 1 - image" + ".png"), image)
+    if has_extra:
+        cv2.imwrite(
+            os.path.join(
+                debug_dir,
+                "analysis step 1 - image" + "_extra" + str(has_extra) + ".png",
+            ),
+            image,
+        )
+    else:
+        cv2.imwrite(os.path.join(debug_dir, "analysis step 1 - image" + ".png"), image)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    if has_extra:cv2.imwrite(os.path.join(debug_dir, "analysis step 2 - grayscale" + "_extra"+str(has_extra)+".png"), gray)
-    else:cv2.imwrite(os.path.join(debug_dir, "analysis step 2 - grayscale" + ".png"), gray)
+    if has_extra:
+        cv2.imwrite(
+            os.path.join(
+                debug_dir,
+                "analysis step 2 - grayscale" + "_extra" + str(has_extra) + ".png",
+            ),
+            gray,
+        )
+    else:
+        cv2.imwrite(
+            os.path.join(debug_dir, "analysis step 2 - grayscale" + ".png"), gray
+        )
 
     # Threshold and filter the image for better contour detection.
     # Formerly 200. Change back if black rectangles aren't being detected as dark
     # enough.
     threshold_value = 127
     _, thresh = cv2.threshold(gray, threshold_value, 255, 1)
-    if has_extra:cv2.imwrite(os.path.join(debug_dir, "analysis step 3 - threshold" + "_extra"+str(has_extra)+".png"), thresh)
-    else:cv2.imwrite(os.path.join(debug_dir, "analysis step 3 - threshold" + ".png"), thresh)
+    if has_extra:
+        cv2.imwrite(
+            os.path.join(
+                debug_dir,
+                "analysis step 3 - threshold" + "_extra" + str(has_extra) + ".png",
+            ),
+            thresh,
+        )
+    else:
+        cv2.imwrite(
+            os.path.join(debug_dir, "analysis step 3 - threshold" + ".png"), thresh
+        )
     close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 
     pixel = cli_args.get("pixel") or False
-    noycenter=cli_args.get("no_y_center") or False
-    noxcenter=cli_args.get("no_x_center") or False
+    noycenter = cli_args.get("no_y_center") or False
+    noxcenter = cli_args.get("no_x_center") or False
     if pixel:
         iterations = 0
     else:
@@ -122,8 +150,16 @@ def detect_characters(
         thresh, cv2.MORPH_CLOSE, close_kernel, iterations=iterations
     )
 
-    if has_extra:cv2.imwrite(os.path.join(debug_dir, "analysis step 4 - close" + "_extra"+str(has_extra)+".png"), close)
-    else:cv2.imwrite(os.path.join(debug_dir, "analysis step 4 - close" + ".png"), close)
+    if has_extra:
+        cv2.imwrite(
+            os.path.join(
+                debug_dir,
+                "analysis step 4 - close" + "_extra" + str(has_extra) + ".png",
+            ),
+            close,
+        )
+    else:
+        cv2.imwrite(os.path.join(debug_dir, "analysis step 4 - close" + ".png"), close)
 
     # Search for contours.
     contours, h = cv2.findContours(close, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -243,14 +279,23 @@ def detect_characters(
     if not os.path.exists(row_dir):
         os.mkdir(row_dir)
     for row in range(rows):
-        if has_extra:cv2.imwrite(
-            os.path.join(row_dir, "analysis step 5 - row" + str(row + 1) + "_extra"+str(has_extra)+".png"),
-            row_images[row][0],
-        )
-        else:cv2.imwrite(
-            os.path.join(row_dir, "analysis step 5 - row" + str(row + 1) + ".png"),
-            row_images[row][0],
-        )
+        if has_extra:
+            cv2.imwrite(
+                os.path.join(
+                    row_dir,
+                    "analysis step 5 - row"
+                    + str(row + 1)
+                    + "_extra"
+                    + str(has_extra)
+                    + ".png",
+                ),
+                row_images[row][0],
+            )
+        else:
+            cv2.imwrite(
+                os.path.join(row_dir, "analysis step 5 - row" + str(row + 1) + ".png"),
+                row_images[row][0],
+            )
 
     # sort the biggest 9 rows, top-to-bottom
     contours[0:9] = sorted(contours[0:9], key=lambda cnt: cv2.boundingRect(cnt)[1])
@@ -262,7 +307,7 @@ def detect_characters(
     with open(default_json) as f:
         default_json_data = json.load(f)
     sheet_glyphs = default_json_data.get("glyphs", {}).get("sheet", [])
-    sheet_glyphs = sheet_glyphs[180*has_extra:180*(has_extra+1)]
+    sheet_glyphs = sheet_glyphs[180 * has_extra : 180 * (has_extra + 1)]
     for row in range(rows):
         # Calculate the bounding of the contour and approximate the height
         # and width for final cropping.
@@ -414,12 +459,16 @@ def detect_characters(
             # debug_image.save(os.path.join(debug_dir, "analysis PREVIEW" + ".png")) # every glyph
         # debug_image.save(os.path.join(debug_dir, "analysis PREVIEW" + ".png")) # every row
 
-    if has_extra:debug_image.save(
-        os.path.join(debug_dir, "analysis PREVIEW" + "_extra"+str(has_extra)+".png")
-    ) 
-    else:debug_image.save(
-        os.path.join(debug_dir, "analysis PREVIEW" + ".png")
-    )  # after processing
+    if has_extra:
+        debug_image.save(
+            os.path.join(
+                debug_dir, "analysis PREVIEW" + "_extra" + str(has_extra) + ".png"
+            )
+        )
+    else:
+        debug_image.save(
+            os.path.join(debug_dir, "analysis PREVIEW" + ".png")
+        )  # after processing
 
     # Now we have the characters but since they are all mixed up we need to position them.
     # Sort characters based on 'y' coordinate and group them by number of rows at a time. Then
@@ -442,16 +491,21 @@ def detect_characters(
         # Match each writein to its cell, so that we can scan the writein redraw cell
         with open(default_json) as f:
             glyphs_json = json.load(f).get("glyphs", {}).get("sheet", [])
-        glyphs_json=glyphs_json[180*has_extra:180*(has_extra+1)]
+        glyphs_json = glyphs_json[180 * has_extra : 180 * (has_extra + 1)]
         for position, word in enumerate(other_words):
             for default_glyph_index, default_glyph in enumerate(glyphs_json):
                 if "name" in default_glyph:
                     if default_glyph["name"] == word.split("/")[0] + "Tok":
-                        try:sorted_characters[default_glyph_index] = sorted_characters[
-                            writein_cell_indices[position]-180*has_extra
-                        ]
+                        try:
+                            sorted_characters[default_glyph_index] = sorted_characters[
+                                writein_cell_indices[position] - 180 * has_extra
+                            ]
                         except:
-                            print('Unexpected error with "'+word+'". Possibly this is because a word is on 2 different sheets. Corrections/redrawings of the same glyph should happen within the same sheet.')
+                            print(
+                                'Unexpected error with "'
+                                + word
+                                + '". Possibly this is because a word is on 2 different sheets. Corrections/redrawings of the same glyph should happen within the same sheet.'
+                            )
 
     #          ▄                 █         █
     # ▄▀▄ ▀▄▀ ▀█▀ █▄▀ ▄▀█    ▄▀█ █ █ █ █▀▄ █▀▄ ▄▀▀
@@ -466,7 +520,8 @@ def detect_characters(
         glyphs_derived = default_json_data.get("glyphs", {}).get("derived", [])
         glyphs_copies = default_json_data.get("glyphs", {}).get("copies", [])
         glyphs_list = glyphs_derived + glyphs_copies
-        if has_extra:glyphs_list=[]
+        if has_extra:
+            glyphs_list = []
         for glyph_derived in glyphs_list:
             source = sorted_characters[glyph_derived["source-glyph"]]
             source_left, source_top, source_w, source_h = (
@@ -520,7 +575,7 @@ def detect_characters(
     return sorted_characters
 
 
-def save_images(characters, debug_dir, default_json, cli_args,has_extra=0):
+def save_images(characters, debug_dir, default_json, cli_args, has_extra=0):
     """Create directory for each character and save as PNG.
 
     Creates directory and PNG file for each image as following:
@@ -549,8 +604,10 @@ def save_images(characters, debug_dir, default_json, cli_args,has_extra=0):
         glyphs_sheet = default_json_data.get("glyphs", {}).get("sheet", [])
         glyphs_derived = default_json_data.get("glyphs", {}).get("derived", [])
         glyphs_copies = default_json_data.get("glyphs", {}).get("copies", [])
-        if has_extra:glyphList=glyphs_sheet[180*has_extra:180*(has_extra+1)]
-        else:glyphList = glyphs_sheet[:180] + glyphs_derived + glyphs_copies
+        if has_extra:
+            glyphList = glyphs_sheet[180 * has_extra : 180 * (has_extra + 1)]
+        else:
+            glyphList = glyphs_sheet[:180] + glyphs_derived + glyphs_copies
         for cellNum, images in enumerate(characters):
             curMetadatum = glyphList[cellNum]
             if len(glyphList) > cellNum:  # should this be `>=`?
@@ -586,8 +643,10 @@ def save_images(characters, debug_dir, default_json, cli_args,has_extra=0):
         sheet_glyphs = default_json_data.get("glyphs", {}).get("sheet", [])
         derived_glyphs = default_json_data.get("glyphs", {}).get("derived", [])
         copied_glyphs = default_json_data.get("glyphs", {}).get("copies", [])
-        if has_extra:combined_glyphs=sheet_glyphs[180*has_extra:180*(has_extra+1)]
-        else:combined_glyphs = sheet_glyphs[:180] + derived_glyphs + copied_glyphs
+        if has_extra:
+            combined_glyphs = sheet_glyphs[180 * has_extra : 180 * (has_extra + 1)]
+        else:
+            combined_glyphs = sheet_glyphs[:180] + derived_glyphs + copied_glyphs
         for glyph in combined_glyphs:
             glyph_type = glyph.get("type", "none")
             if glyph_type == "cartouche-middle" or glyph_type == "long-pi-middle":
