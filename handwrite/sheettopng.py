@@ -16,6 +16,7 @@ def sheet_to_png(
     writein_cell_indices,
     cols=20,
     rows=9,
+    has_extra=False
 ):
     """Convert a sheet of sample writing input to a custom directory structure of PNGs.
 
@@ -47,12 +48,14 @@ def sheet_to_png(
         writein_cell_indices,
         cols=cols,
         rows=rows,
+        has_extra=has_extra
     )
     save_images(
         characters,  # more like cells
         debug_dir,
         default_json,
         cli_args,
+        has_extra=has_extra
     )
 
 
@@ -65,6 +68,7 @@ def detect_characters(
     writein_cell_indices,
     cols=20,
     rows=9,
+    has_extra=False
 ):
     """Detect contours on the input image and filter them to get only characters.
 
@@ -92,16 +96,19 @@ def detect_characters(
 
     # Read the image and convert to grayscale
     image = cv2.imread(sheet_image)
-    cv2.imwrite(os.path.join(debug_dir, "analysis step 1 - image" + ".png"), image)
+    if has_extra:cv2.imwrite(os.path.join(debug_dir, "analysis step 1 - image" + "_extra.png"), image)
+    else:cv2.imwrite(os.path.join(debug_dir, "analysis step 1 - image" + ".png"), image)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite(os.path.join(debug_dir, "analysis step 2 - grayscale" + ".png"), gray)
+    if has_extra:cv2.imwrite(os.path.join(debug_dir, "analysis step 2 - grayscale" + "_extra.png"), gray)
+    else:cv2.imwrite(os.path.join(debug_dir, "analysis step 2 - grayscale" + ".png"), gray)
 
     # Threshold and filter the image for better contour detection.
     # Formerly 200. Change back if black rectangles aren't being detected as dark
     # enough.
     threshold_value = 127
     _, thresh = cv2.threshold(gray, threshold_value, 255, 1)
-    cv2.imwrite(os.path.join(debug_dir, "analysis step 3 - threshold" + ".png"), thresh)
+    if has_extra:cv2.imwrite(os.path.join(debug_dir, "analysis step 3 - threshold" + "_extra.png"), thresh)
+    else:cv2.imwrite(os.path.join(debug_dir, "analysis step 3 - threshold" + ".png"), thresh)
     close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
 
     pixel = cli_args.get("pixel") or False
@@ -113,7 +120,8 @@ def detect_characters(
         thresh, cv2.MORPH_CLOSE, close_kernel, iterations=iterations
     )
 
-    cv2.imwrite(os.path.join(debug_dir, "analysis step 4 - close" + ".png"), close)
+    if has_extra:cv2.imwrite(os.path.join(debug_dir, "analysis step 4 - close" + "_extra.png"), close)
+    else:cv2.imwrite(os.path.join(debug_dir, "analysis step 4 - close" + ".png"), close)
 
     # Search for contours.
     contours, h = cv2.findContours(close, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -233,7 +241,11 @@ def detect_characters(
     if not os.path.exists(row_dir):
         os.mkdir(row_dir)
     for row in range(rows):
-        cv2.imwrite(
+        if has_extra:cv2.imwrite(
+            os.path.join(row_dir, "analysis step 5 - row" + str(row + 1) + "_extra.png"),
+            row_images[row][0],
+        )
+        else:cv2.imwrite(
             os.path.join(row_dir, "analysis step 5 - row" + str(row + 1) + ".png"),
             row_images[row][0],
         )
@@ -248,6 +260,8 @@ def detect_characters(
     with open(default_json) as f:
         default_json_data = json.load(f)
     sheet_glyphs = default_json_data.get("glyphs", {}).get("sheet", [])
+    if has_extra:sheet_glyphs = sheet_glyphs[180:]
+    else:sheet_glyphs = sheet_glyphs[:180]
     for row in range(rows):
         # Calculate the bounding of the contour and approximate the height
         # and width for final cropping.
@@ -399,7 +413,10 @@ def detect_characters(
             # debug_image.save(os.path.join(debug_dir, "analysis PREVIEW" + ".png")) # every glyph
         # debug_image.save(os.path.join(debug_dir, "analysis PREVIEW" + ".png")) # every row
 
-    debug_image.save(
+    if has_extra:debug_image.save(
+        os.path.join(debug_dir, "analysis PREVIEW" + "_extra.png")
+    ) 
+    else:debug_image.save(
         os.path.join(debug_dir, "analysis PREVIEW" + ".png")
     )  # after processing
 
@@ -424,11 +441,16 @@ def detect_characters(
         # Match each writein to its cell, so that we can scan the writein redraw cell
         with open(default_json) as f:
             glyphs_json = json.load(f).get("glyphs", {}).get("sheet", [])
+        if has_extra:glyphs_json=glyphs_json[180:]
+        else:glyphs_json=glyphs_json[:180]
         for position, word in enumerate(other_words):
             for default_glyph_index, default_glyph in enumerate(glyphs_json):
                 if "name" in default_glyph:
                     if default_glyph["name"] == word.split("/")[0] + "Tok":
-                        sorted_characters[default_glyph_index] = sorted_characters[
+                        if has_extra:sorted_characters[default_glyph_index] = sorted_characters[
+                            writein_cell_indices[position]-180
+                        ]
+                        else:sorted_characters[default_glyph_index] = sorted_characters[
                             writein_cell_indices[position]
                         ]
 
@@ -445,6 +467,7 @@ def detect_characters(
         glyphs_derived = default_json_data.get("glyphs", {}).get("derived", [])
         glyphs_copies = default_json_data.get("glyphs", {}).get("copies", [])
         glyphs_list = glyphs_derived + glyphs_copies
+        if has_extra:glyphs_list=[]
         for glyph_derived in glyphs_list:
             source = sorted_characters[glyph_derived["source-glyph"]]
             source_left, source_top, source_w, source_h = (
@@ -498,7 +521,7 @@ def detect_characters(
     return sorted_characters
 
 
-def save_images(characters, debug_dir, default_json, cli_args):
+def save_images(characters, debug_dir, default_json, cli_args,has_extra=False):
     """Create directory for each character and save as PNG.
 
     Creates directory and PNG file for each image as following:
@@ -527,7 +550,8 @@ def save_images(characters, debug_dir, default_json, cli_args):
         glyphs_sheet = default_json_data.get("glyphs", {}).get("sheet", [])
         glyphs_derived = default_json_data.get("glyphs", {}).get("derived", [])
         glyphs_copies = default_json_data.get("glyphs", {}).get("copies", [])
-        glyphList = glyphs_sheet + glyphs_derived + glyphs_copies
+        if has_extra:glyphList=glyphs_sheet[180:]
+        else:glyphList = glyphs_sheet[:180] + glyphs_derived + glyphs_copies
         for cellNum, images in enumerate(characters):
             curMetadatum = glyphList[cellNum]
             if len(glyphList) > cellNum:  # should this be `>=`?
@@ -563,7 +587,8 @@ def save_images(characters, debug_dir, default_json, cli_args):
         sheet_glyphs = default_json_data.get("glyphs", {}).get("sheet", [])
         derived_glyphs = default_json_data.get("glyphs", {}).get("derived", [])
         copied_glyphs = default_json_data.get("glyphs", {}).get("copies", [])
-        combined_glyphs = sheet_glyphs + derived_glyphs + copied_glyphs
+        if has_extra:combined_glyphs=sheet_glyphs[180:]
+        else:combined_glyphs = sheet_glyphs[:180] + derived_glyphs + copied_glyphs
         for glyph in combined_glyphs:
             glyph_type = glyph.get("type", "none")
             if glyph_type == "cartouche-middle" or glyph_type == "long-pi-middle":
@@ -574,9 +599,8 @@ def save_images(characters, debug_dir, default_json, cli_args):
                 crop("long-pi-end", debug_dir, cli_args, glyph["name"], True)
 
 
-def crop(type, debug_dir, cli_args, char_name, resize=False):
+def crop(typ, debug_dir, cli_args, char_name, resize=False):
     char_img = Image.open(debug_dir + "/" + char_name + "/" + char_name + ".png")
-
     # Resize the cartouche middle from 1px wide to the standard width (for a given sheet
     # version):
     sheet_version = cli_args.get("sheet_version") or "99999999.999999.999999"
@@ -625,7 +649,7 @@ def crop(type, debug_dir, cli_args, char_name, resize=False):
         cartouche_overlap_vector = grid_glyph_w * in_pixels / 42
         cartouche_overlap_pixel = 0
 
-    if type == "middle":
+    if typ == "middle":
         # Crop out extra scan area on left
         draw.rectangle(
             (
@@ -654,7 +678,7 @@ def crop(type, debug_dir, cli_args, char_name, resize=False):
     left_pi_padding = 4 * in_pixels
     right_pi_padding = 2 * in_pixels
 
-    if type == "long-pi-start":
+    if typ == "long-pi-start":
         # Crop out the rightmost 1/4em
         draw.rectangle(
             (
@@ -664,7 +688,7 @@ def crop(type, debug_dir, cli_args, char_name, resize=False):
             fill="white",
         )
 
-    if type == "long-pi-end":
+    if typ == "long-pi-end":
         # Crop out the leftmost 3/4em
         draw.rectangle(
             (

@@ -31,6 +31,7 @@ def run(
     cli_args,
     other_words_string,
     writein_cell_indices,
+    extra_sheet
 ):
     create_toml_html(
         debug_dir, output_directory, default_json, cli_args, other_words_string
@@ -41,8 +42,18 @@ def run(
         default_json,
         cli_args,
         other_words_string,
-        writein_cell_indices,
+        writein_cell_indices
     )
+    if extra_sheet!=None:
+        sheet_to_png(
+            extra_sheet,
+            debug_dir,
+            default_json,
+            cli_args,
+            other_words_string,
+            writein_cell_indices,
+            has_extra=True
+        )
     png_to_svg(cli_args, default_json, debug_dir=debug_dir)
     svg_to_ttf(debug_dir, output_directory, default_json, cli_args, other_words_string)
     add_ligatures(
@@ -57,6 +68,7 @@ def converters(
     default_json=None,
     cli_args=None,
     other_words_string=None,
+    extra_sheet=None
 ):
     # Debug/temp directory:
     if not debug_dir:
@@ -82,6 +94,9 @@ def converters(
     with open(default_json, "rb") as file:
         font_data = tomllib.load(file)
     glyphs_json = font_data.get("glyphs", {}).get("sheet", [])
+    if extra_sheet!=None:
+        for cell in range(9*20):
+            glyphs_json.append({})
 
     # Map the `--other-words` list to the blank cells in default.toml.
     writein_cell_indices = []
@@ -207,6 +222,7 @@ def converters(
             cli_args,
             other_words_string,
             writein_cell_indices,
+            extra_sheet
         )
 
     if isTempdir:
@@ -273,6 +289,11 @@ def main():
         help="Skip creating a .TOML file, and skip writing to `generate all fonts.bat` (false by default)",
         default=False,
     )
+    parser.add_argument(
+        "--extra-sheet",
+        help="append extra sheets to scan in for even more words",
+        default=None,
+    )
 
     args = parser.parse_args()
     # cli_args = { # The format looks like this:
@@ -284,6 +305,7 @@ def main():
     #     "sheet_version": args.sheet_version,
     #     "pixel": args.pixel,
     #     "not_new": args.not_new,
+    #     "extra_sheet": args.extra_sheet,
     # }
     cli_args = vars(parser.parse_args())
 
@@ -334,4 +356,5 @@ def main():
         None,
         cli_args,
         args.other_words,
+        args.extra_sheet
     )
